@@ -1,0 +1,66 @@
+const path = require('path');
+const fs = require('fs');
+const axios = require('axios');
+const cloudinary = require('../config/cloudinary');
+const { PrismaClient } = require('@prisma/client');
+const prisma = new PrismaClient();
+
+exports.deleteFile = async (req, res) => {
+    const fileId = req.params.id;
+
+    try {
+        const file = await prisma.file.findUnique({
+            where: { id: fileId }
+        });
+
+        if (!file || file.userId !== req.user.id) {
+            return res.status(403).send('Forbidden');
+        }
+
+        // Delete from Cloudinary
+        if (file.cloudinaryPublicId) {
+            await cloudinary.uploader.destroy(file.cloudinaryPublicId);
+        }
+
+
+        await prisma.file.delete({
+            where: { id: fileId }
+        });
+
+        if (file.folderId) {
+            res.redirect(`/folders/${file.folderId}`);
+        } else {
+            res.redirect('/folders');
+        }
+
+    } catch (err) {
+        console.error('Error deleting file:', err);
+        res.status(500).send('Internal Server Error');
+    }
+};
+
+exports.downloadfile = async (req, res) => {
+    const fileId = req.params.id;
+
+    try {
+        const file = await prisma.file.indUnique({
+            where: { id: fileId }
+        });
+
+        if (!file || file.userId !== req.user.id) {
+            return res.status(403).send('Forbidden');
+        }
+
+        const response = await axios.get(file.url, {
+            responseType: 'stream'
+        });
+
+        res.setHeader('Content-Disposition', `attachment; filename=${file.name}`);
+        res.setHeader('Content-Type', response.headers['constent-type']);
+
+        response.data.pipe(res);
+    } catch (err) {
+        console.error('Error downloading file:', err);
+        res.status(500).send('Internal Server Error');
+    }
+};
