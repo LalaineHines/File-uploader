@@ -1,0 +1,23 @@
+<% layout('layout') -%>
+
+<section class="max-w-md mx-auto mt-16 bg-midnightNavy p-8 rounded-2xl shadow-glowCyan">
+  <h2 class="text-3xl font-extrabold mb-6 text-neonTeal">Rename Folder</h2>
+  <form action="/folders/<%= parentId ? `${parentId}/${folder.id}` : `${folder.id}` %>/rename" method="POST" class="space-y-6">
+    <input
+      type="text"
+      name="name"
+      value="<%= folder.name %>"
+      class="w-full px-5 py-3 rounded-lg bg-darkSlate text-white border border-gray-700 focus:border-neonTeal focus:outline-none transition"
+      required
+    />
+    <button
+      type="submit"
+      class="w-full bg-neonTeal text-midnightNavy font-bold py-3 rounded-lg shadow-glow hover:bg-moonlightGray transition"
+    >
+      Update
+    </button>
+  </form>
+  <a href="/folders" class="inline-block mt-6 text-moonlightGray hover:text-neonTeal transition">
+    ← Back to folders
+  </a>
+</section>
